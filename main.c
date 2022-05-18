@@ -158,24 +158,24 @@ int main() {
 
     /// libjpeg-turbo jpeg -> rgb24
 
-    char *inJpegName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/followw813654-00290000017f4f7cbcf50a2198f4_512_512.jpeg";
-    char *outRgbName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.rgb24";
-//    int flag1 = decode_JPEG_file(inJpegName1, outRgbName1);
-//    if (flag1 == 0) {
-//        printf("decode ok!\n");
-//    } else {
-//        printf("decode error!\n");
-//    }
-//    printf("↑↑↑↑↑↑↑↑↑↑ Decode JPEG to RGB24 ↑↑↑↑↑↑↑↑↑↑\n\n");
+    char *inJpegName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/resource/followw813654-00290000017f4f7cbcf50a2198f4_512_512.jpeg";
+    char *outRgbName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/resource/libjpeg-turbo-test-image.rgb24";
+    int flag1 = decode_JPEG_file(inJpegName1, outRgbName1);
+    if (flag1 == 0) {
+        printf("decode ok!\n");
+    } else {
+        printf("decode error!\n");
+    }
+    printf("↑↑↑↑↑↑↑↑↑↑ Decode JPEG to RGB24 ↑↑↑↑↑↑↑↑↑↑\n\n");
 
-    /// ffplay -f rawvideo -pixel_format rgb24  -s 3024x4032 /Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.rgb24
+    /// ffplay -f rawvideo -pixel_format rgb24  -s 3024x4032 /Users/blackox626/CLionProjects/RGBAndYUV/resource/libjpeg-turbo-test-image.rgb24
 
-    char *outYUVName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.yuv";
+    char *outYUVName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/resource/libjpeg-turbo-test-image.yuv";
 
     simplest_rgb24_to_yuv420(outRgbName1,3024, 4032, 1, outYUVName1);
 
     /// YUVEye 也可以查看
-    /// ffplay -f rawvideo -pixel_format yuv420p  -s 3024x4032 /Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.yuv
+    /// ffplay -f rawvideo -pixel_format yuv420p  -s 3024x4032 /Users/blackox626/CLionProjects/RGBAndYUV/resource/libjpeg-turbo-test-image.yuv
 
     /// 可以看到 YUV 是 RGB的一半大小
     /// RGB size = width * heihht * 3 (byte)
