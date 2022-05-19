@@ -2,12 +2,15 @@
 #include <stdlib.h>
 #include <libc.h>
 #include <stdbool.h>
+#include "HashMap.h"
+#include "HashCode.h"
+#include "Equal.h"
 
 #include <jpeglib.h>
 
 struct ImageData {
     unsigned char *pixels;
-    long  width;
+    long width;
     long height;
 };
 
@@ -17,8 +20,8 @@ int decode_JPEG_file(char *inJpegName, char *outRgbName) {
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
 
-    FILE * infile;
-    FILE * outfile;
+    FILE *infile;
+    FILE *outfile;
 
     if ((infile = fopen(inJpegName, "rb")) == NULL) {
         fprintf(stderr, "can't open %s\n", inJpegName);
@@ -51,13 +54,13 @@ int decode_JPEG_file(char *inJpegName, char *outRgbName) {
 
     int row_stride = cinfo.output_width * cinfo.output_components;
     /* Make a one-row-high sample array that will go away when done with image */
-    JSAMPARRAY buffer = (JSAMPARRAY)malloc(sizeof(JSAMPROW));
-    buffer[0] = (JSAMPROW)malloc(sizeof(JSAMPLE) * row_stride);
+    JSAMPARRAY buffer = (JSAMPARRAY) malloc(sizeof(JSAMPROW));
+    buffer[0] = (JSAMPROW) malloc(sizeof(JSAMPLE) * row_stride);
 
     struct ImageData imageData = {
             .width =  cinfo.image_width,
             .height = cinfo.image_height,
-            .pixels = malloc(row_stride*cinfo.image_height)
+            .pixels = malloc(row_stride * cinfo.image_height)
     };
     long counter = 0;
 
@@ -68,7 +71,7 @@ int decode_JPEG_file(char *inJpegName, char *outRgbName) {
     }
 
     printf("total size: %ld\n", counter);
-    fwrite(imageData.pixels,  counter, 1, outfile);
+    fwrite(imageData.pixels, counter, 1, outfile);
 
 
     jpeg_finish_decompress(&cinfo);
@@ -153,26 +156,151 @@ int simplest_rgb24_to_yuv420(char *url_in, int w, int h, int num, char *url_out)
     return 0;
 }
 
+void convert(int quotient, unsigned char *hexadecimalNumber) {
+    ;
+    unsigned char i = 0, temp;
+
+    hexadecimalNumber[0] = 48;
+    hexadecimalNumber[1] = 48;
+
+    while (quotient != 0) {
+        temp = quotient % 16;
+
+        if (temp < 10)
+            temp = temp + 48;
+        else
+            temp = temp + 55;
+
+        *(hexadecimalNumber++) = temp;
+
+        quotient = quotient / 16;
+    }
+}
+
+void contact(unsigned char r, unsigned char g, unsigned char b, unsigned char *hex) {
+
+    unsigned char *rs = (unsigned char *) malloc(2);
+    convert(r, rs);
+    unsigned char *gs = (unsigned char *) malloc(2);
+    convert(g, gs);
+    unsigned char *bs = (unsigned char *) malloc(2);
+    convert(b, bs);
+
+    *(hex) = *(rs + 1);
+    *(hex + 1) = *(rs);
+    *(hex + 2) = *(gs + 1);
+    *(hex + 3) = *(gs);
+    *(hex + 4) = *(bs + 1);
+    *(hex + 5) = *(bs);
+}
+
+void pt(Entry *entry) {
+    printf("%s %d \n", (char *) entry->key, entry->value);
+}
+
+void bubble_sort(Entry **arr, int len) {
+    int i, j;
+    Entry *temp;
+    for (i = 0; i < len - 1; i++)
+        for (j = 0; j < len - 1 - i; j++)
+            if (arr[j]->value < arr[j + 1]->value) {
+                temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+}
+
+int topXX(char *url_in, int w, int h, int num) {
+    FILE *fp = fopen(url_in, "rb+");
+    unsigned char *pic_rgb24 = (unsigned char *) malloc(w * h * 3);
+
+    fread(pic_rgb24, 1, w * h * 3, fp);
+
+    unsigned char *ptrRGB;
+
+    MyHashMap *myHashmap = createMyHashMap(myHashCodeString, myEqualString);
+
+//    unsigned char *hex = (unsigned char *) malloc(6);
+
+    unsigned char r, g, b;
+    for (int j = 0; j < h; j++) {
+        ptrRGB = pic_rgb24 + w * j * 3;
+        for (int i = 0; i < w; i++) {
+            r = *(ptrRGB++);
+            g = *(ptrRGB++);
+            b = *(ptrRGB++);
+
+            unsigned char *hex = (unsigned char *) malloc(6);
+
+            contact(r, g, b, hex);
+//            printf("--%s\n", hex);
+
+            int count = myHashMapGetDataByKey(myHashmap, hex);
+            if (count != NULL) {
+                int newCount = count + 1;
+                myHashMapPutData(myHashmap, hex, newCount);
+            } else {
+                int newCount = 1;
+                myHashMapPutData(myHashmap, hex, newCount);
+            }
+
+//            free(hex);
+        }
+    }
+
+    myHashMapGetSize(myHashmap);
+
+//    myHashMapOutput(myHashmap, pt);
+//    printf("--%d",myHashmap->size);
+    Entry **list = (Entry **) malloc(sizeof(Entry *) * myHashmap->size);
+
+    MyHashMapEntryIterator *iterator = createMyHashMapEntryIterator(myHashmap);
+    while (myHashMapEntryIteratorHasNext(iterator)) {
+        Entry *entry = myHashMapEntryIteratorNext(iterator);
+//        pt(entry);
+//        printf("--%d",iterator->count);
+
+        list[iterator->count-1] = entry;
+    }
+
+    bubble_sort(list, myHashmap->size);
+
+    for (int i = 0; i < num; ++i) {
+        pt(list[i]);
+    }
+
+    freeMyHashMapEntryIterator(iterator);
+
+//    free(hex);
+
+    free(list);
+
+    free(pic_rgb24);
+    fclose(fp);
+
+    return 0;
+}
+
 int main() {
 //    printf("Hello, World!\n");
 
     /// libjpeg-turbo jpeg -> rgb24
 
-    char *inJpegName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/followw813654-00290000017f4f7cbcf50a2198f4_512_512.jpeg";
+    char *inJpegName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/followw813654-659b0000017e65bebc4b0a20e284_1200_800.jpeg";
     char *outRgbName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.rgb24";
-//    int flag1 = decode_JPEG_file(inJpegName1, outRgbName1);
-//    if (flag1 == 0) {
-//        printf("decode ok!\n");
-//    } else {
-//        printf("decode error!\n");
-//    }
-//    printf("↑↑↑↑↑↑↑↑↑↑ Decode JPEG to RGB24 ↑↑↑↑↑↑↑↑↑↑\n\n");
+    int flag1 = decode_JPEG_file(inJpegName1, outRgbName1);
+    if (flag1 == 0) {
+        printf("decode ok!\n");
+    } else {
+        printf("decode error!\n");
+    }
+    printf("↑↑↑↑↑↑↑↑↑↑ Decode JPEG to RGB24 ↑↑↑↑↑↑↑↑↑↑\n\n");
 
     /// ffplay -f rawvideo -pixel_format rgb24  -s 3024x4032 /Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.rgb24
 
     char *outYUVName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.yuv";
 
-    simplest_rgb24_to_yuv420(outRgbName1,3024, 4032, 1, outYUVName1);
+//    simplest_rgb24_to_yuv420(outRgbName1, 3024, 4032, 1, outYUVName1);
 
     /// YUVEye 也可以查看
     /// ffplay -f rawvideo -pixel_format yuv420p  -s 3024x4032 /Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.yuv
@@ -180,6 +308,8 @@ int main() {
     /// 可以看到 YUV 是 RGB的一半大小
     /// RGB size = width * heihht * 3 (byte)
     /// YUV size = width * heihht * 1.5 (byte)  420p ( y 1, uv 0.5)
+
+    topXX(outRgbName1, 1200, 800, 20);
 
     return 0;
 }

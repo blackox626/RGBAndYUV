@@ -11,7 +11,7 @@ include_directories(${LIBJPEGTURBO_DIR}/include/)
 # 动态链接库或静态链接库的搜索路径
 link_directories(${LIBJPEGTURBO_DIR}/lib/)
 
-add_executable(RGBAndYUV main.c)
+add_executable(RGBAndYUV main.c HashMap.h HashMap.c List.c List.h HashCode.h HashCode.c Equal.h Equal.c)
 
 #链接库
 target_link_libraries(RGBAndYUV libturbojpeg.dylib)
