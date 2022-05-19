@@ -156,8 +156,9 @@ int simplest_rgb24_to_yuv420(char *url_in, int w, int h, int num, char *url_out)
     return 0;
 }
 
-void convert(int quotient, unsigned char *hexadecimalNumber) {
-    ;
+/// 转16进制
+void convert(unsigned char quotient, unsigned char *hexadecimalNumber) {
+
     unsigned char i = 0, temp;
 
     hexadecimalNumber[0] = 48;
@@ -177,6 +178,7 @@ void convert(int quotient, unsigned char *hexadecimalNumber) {
     }
 }
 
+/// 16进制颜色表示
 void contact(unsigned char r, unsigned char g, unsigned char b, unsigned char *hex) {
 
     unsigned char *rs = (unsigned char *) malloc(2);
@@ -210,6 +212,7 @@ void bubble_sort(Entry **arr, int len) {
             }
 }
 
+/// top 颜色
 int topXX(char *url_in, int w, int h, int num) {
     FILE *fp = fopen(url_in, "rb+");
     unsigned char *pic_rgb24 = (unsigned char *) malloc(w * h * 3);
@@ -285,9 +288,8 @@ int main() {
 //    printf("Hello, World!\n");
 
     /// libjpeg-turbo jpeg -> rgb24
-
-    char *inJpegName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/followw813654-659b0000017e65bebc4b0a20e284_1200_800.jpeg";
-    char *outRgbName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.rgb24";
+    char *inJpegName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/resource/followw813654-00290000017f4f7cbcf50a2198f4_512_512.jpeg";
+    char *outRgbName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/resource/libjpeg-turbo-test-image.rgb24";
     int flag1 = decode_JPEG_file(inJpegName1, outRgbName1);
     if (flag1 == 0) {
         printf("decode ok!\n");
@@ -296,19 +298,20 @@ int main() {
     }
     printf("↑↑↑↑↑↑↑↑↑↑ Decode JPEG to RGB24 ↑↑↑↑↑↑↑↑↑↑\n\n");
 
-    /// ffplay -f rawvideo -pixel_format rgb24  -s 3024x4032 /Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.rgb24
+    /// ffplay -f rawvideo -pixel_format rgb24  -s 3024x4032 /Users/blackox626/CLionProjects/RGBAndYUV/resource/libjpeg-turbo-test-image.rgb24
 
-    char *outYUVName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.yuv";
+    char *outYUVName1 = "/Users/blackox626/CLionProjects/RGBAndYUV/resource/libjpeg-turbo-test-image.yuv";
 
-//    simplest_rgb24_to_yuv420(outRgbName1, 3024, 4032, 1, outYUVName1);
+    simplest_rgb24_to_yuv420(outRgbName1, 3024, 4032, 1, outYUVName1);
 
     /// YUVEye 也可以查看
-    /// ffplay -f rawvideo -pixel_format yuv420p  -s 3024x4032 /Users/blackox626/CLionProjects/RGBAndYUV/libjpeg-turbo-test-image.yuv
+    /// ffplay -f rawvideo -pixel_format yuv420p  -s 3024x4032 /Users/blackox626/CLionProjects/RGBAndYUV/resource/libjpeg-turbo-test-image.yuv
 
     /// 可以看到 YUV 是 RGB的一半大小
     /// RGB size = width * heihht * 3 (byte)
     /// YUV size = width * heihht * 1.5 (byte)  420p ( y 1, uv 0.5)
 
+    /// top 20 color
     topXX(outRgbName1, 1200, 800, 20);
 
     return 0;
